@@ -3,119 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolatore Fine Pena</title>
+    <title>Calcolo Liberazione Anticipata</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            max-width: 500px;
-            margin: auto;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-        input[type="number"], input[type="date"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #eef;
-            border: 1px solid #007BFF;
-            border-radius: 4px;
-        }
+        /* Stili CSS rimangono identici alla versione precedente */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 20px; background-color: #f0f2f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { text-align: center; font-size: 0.9em; margin-bottom: 30px; }
+        .contact-link { text-align: center; margin-top: 20px; }
+        .contact-link a { color: #3498db; text-decoration: none; font-size: 0.8em; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; color: #34495e; font-weight: 500; }
+        input[type="date"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 16px; }
+        .button-group { display: flex; gap: 10px; margin-top: 25px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: opacity 0.3s; }
+        button:hover { opacity: 0.9; }
+        #calculateBtn { background-color: #27ae60; color: white; }
+        #resetBtn { background-color: #e74c3c; color: white; }
+        .results { margin-top: 25px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+        .result-item { margin: 10px 0; }
+        .result-item strong { color: #2c3e50; display: block; margin-bottom: 5px; }
+        @media (max-width: 480px) { .container { padding: 20px; } input[type="number"] { font-size: 14px; } button { font-size: 14px; } }
     </style>
 </head>
 <body>
-    <h1>Calcolatore Fine Pena</h1>
-    <label>Data di inizio pena:</label>
-    <input type="date" id="startDate">
+    <div class="container">
+        <h1>Calcolo Liberazione Anticipata by Luca e Alex</h1>
+        
+        <div class="subtitle">
+            <div class="contact-link">
+                <a href="https://www.tiktok.com/@detenutiliberi1" target="_blank">Clicca qui per contattarci</a>
+            </div>
+        </div>
 
-    <label>Anni da scontare:</label>
-    <input type="number" id="years" value="0">
+        <!-- Campi input (rimangono identici) -->
+        <div class="input-group"><label>Data inizio pena</label><input type="date" id="startDate"></div>
+        <div class="input-group"><label>Anni da scontare</label><input type="number" id="years" min="0"></div>
+        <div class="input-group"><label>Mesi da scontare</label><input type="number" id="months" min="0"></div>
+        <div class="input-group"><label>Giorni da scontare</label><input type="number" id="days" min="0"></div>
+        <div class="input-group"><label>Semestri persi</label><input type="number" id="lostSemesters" min="0"></div>
 
-    <label>Mesi da scontare:</label>
-    <input type="number" id="months" value="0">
+        <div class="button-group">
+            <button id="calculateBtn" onclick="calculate()">Calcola</button>
+            <button id="resetBtn" onclick="resetForm()">Reset</button>
+        </div>
 
-    <label>Giorni da scontare:</label>
-    <input type="number" id="days" value="0">
-
-    <label>Semestri persi (per cattiva condotta):</label>
-    <input type="number" id="lostSemesters" value="0">
-
-    <button onclick="calculate()">Calcola</button>
-    <button onclick="resetFields()">Reset</button>
-
-    <div class="result" id="result"></div>
+        <div class="results">
+            <div class="result-item"><strong>Data fine pena provvisoria:</strong><span id="provisionalEnd">-</span></div>
+            <div class="result-item"><strong>Semestri fruibili:</strong><span id="validSemesters">-</span></div>
+            <div class="result-item"><strong>Giorni di sconto accumulati:</strong><span id="discountDays">-</span></div>
+            <div class="result-item"><strong>Data fine pena definitiva:</strong><span id="definitiveEnd">-</span></div>
+        </div>
+    </div>
 
     <script>
         function calculate() {
-            const startDate = new Date(document.getElementById('startDate').value);
+            // Recupera i valori dai campi
+            const start = new Date(document.getElementById('startDate').value);
             const years = parseInt(document.getElementById('years').value) || 0;
             const months = parseInt(document.getElementById('months').value) || 0;
             const days = parseInt(document.getElementById('days').value) || 0;
-            const lostSemesters = parseInt(document.getElementById('lostSemesters').value) || 0;
+            const lost = parseInt(document.getElementById('lostSemesters').value) || 0;
 
-            if (isNaN(startDate.getTime())) {
-                alert("Inserisci una data di inizio valida.");
+            if (!document.getElementById('startDate').value) {
+                alert("Inserire la data di inizio pena");
                 return;
             }
 
-            // Calcolo della data provvisoria
-            let provisionalReleaseDate = new Date(startDate);
-            provisionalReleaseDate.setFullYear(provisionalReleaseDate.getFullYear() + years);
-            provisionalReleaseDate.setMonth(provisionalReleaseDate.getMonth() + months);
-            provisionalReleaseDate.setDate(provisionalReleaseDate.getDate() + days);
+            // 1. Calcola la data di fine pena provvisoria iniziale
+            const initialProvisionalEnd = new Date(start);
+            initialProvisionalEnd.setFullYear(start.getFullYear() + years);
+            initialProvisionalEnd.setMonth(start.getMonth() + months);
+            initialProvisionalEnd.setDate(start.getDate() + days);
 
-            // Calcolo dei semestri totali e fruibili
-            const totalMonths = years * 12 + months;
-            const totalSemesters = Math.floor(totalMonths / 6);
-            let usableSemesters = Math.max(totalSemesters - lostSemesters, 0);
+            // 2. Calcolo dinamico degli sconti
+            let currentDate = new Date(start);
+            let remainingEnd = new Date(initialProvisionalEnd);
+            let semestriEffettivi = 0;
 
-            // Applica iterativamente lo sconto per i semestri
-            let finalReleaseDate = new Date(provisionalReleaseDate);
-            for (let i = 0; i < usableSemesters; i++) {
-                finalReleaseDate.setDate(finalReleaseDate.getDate() - 45);
+            while(true) {
+                // Calcola la fine del prossimo semestre
+                const nextSemester = new Date(currentDate);
+                nextSemester.setMonth(nextSemester.getMonth() + 6);
+
+                // Verifica se il semestre è completo
+                if(nextSemester > remainingEnd) break;
+
+                // Applica lo sconto di 45 giorni
+                remainingEnd.setDate(remainingEnd.getDate() - 45);
+                semestriEffettivi++;
+                currentDate = nextSemester;
             }
 
-            // Visualizzazione dei risultati
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p><strong>Data fine pena provvisoria:</strong> ${provisionalReleaseDate.toISOString().split('T')[0]}</p>
-                <p><strong>Semestri fruibili:</strong> ${usableSemesters}</p>
-                <p><strong>Data fine pena definitiva:</strong> ${finalReleaseDate.toISOString().split('T')[0]}</p>
-            `;
+            // 3. Sottrai i semestri persi
+            semestriEffettivi = Math.max(semestriEffettivi - lost, 0);
+            const scontoTotale = semestriEffettivi * 45;
+
+            // 4. Calcola la data definitiva finale
+            const definitiveEnd = new Date(initialProvisionalEnd);
+            definitiveEnd.setDate(definitiveEnd.getDate() - scontoTotale);
+
+            // 5. Aggiorna l'interfaccia
+            document.getElementById('provisionalEnd').textContent = initialProvisionalEnd.toLocaleDateString('it-IT');
+            document.getElementById('validSemesters').textContent = semestriEffettivi;
+            document.getElementById('discountDays').textContent = `${scontoTotale} giorni (${(scontoTotale/30).toFixed(1)} mesi)`;
+            document.getElementById('definitiveEnd').textContent = definitiveEnd.toLocaleDateString('it-IT');
         }
 
-        function resetFields() {
+        function resetForm() {
+            // Resetta tutti i campi e risultati
             document.getElementById('startDate').value = '';
-            document.getElementById('years').value = '0';
-            document.getElementById('months').value = '0';
-            document.getElementById('days').value = '0';
-            document.getElementById('lostSemesters').value = '0';
-            document.getElementById('result').innerHTML = '';
+            document.getElementById('years').value = '';
+            document.getElementById('months').value = '';
+            document.getElementById('days').value = '';
+            document.getElementById('lostSemesters').value = '';
+            document.querySelectorAll('.results span').forEach(span => span.textContent = '-');
         }
     </script>
 </body>
