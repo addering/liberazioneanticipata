@@ -1,14 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Project</title>
+    <title>Calcolatore Fine Pena</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #007BFF;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Ciao! Questo è il mio progetto di prova.</h1>
+    <h1>Calcolatore Fine Pena</h1>
+    <label>Data di inizio pena:</label>
+    <input type="date" id="startDate">
 
-    <!-- Lo script viene caricato qui -->
-    <script src="script.js"></script>
+    <label>Anni da scontare:</label>
+    <input type="number" id="years" value="0">
+
+    <label>Mesi da scontare:</label>
+    <input type="number" id="months" value="0">
+
+    <label>Giorni da scontare:</label>
+    <input type="number" id="days" value="0">
+
+    <label>Semestri persi (per cattiva condotta):</label>
+    <input type="number" id="lostSemesters" value="0">
+
+    <button onclick="calculate()">Calcola</button>
+    <button onclick="resetFields()">Reset</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        function calculate() {
+            const startDate = new Date(document.getElementById('startDate').value);
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            const days = parseInt(document.getElementById('days').value) || 0;
+            const lostSemesters = parseInt(document.getElementById('lostSemesters').value) || 0;
+
+            if (isNaN(startDate.getTime())) {
+                alert("Inserisci una data di inizio valida.");
+                return;
+            }
+
+            // Calcolo della data provvisoria
+            let provisionalReleaseDate = new Date(startDate);
+            provisionalReleaseDate.setFullYear(provisionalReleaseDate.getFullYear() + years);
+            provisionalReleaseDate.setMonth(provisionalReleaseDate.getMonth() + months);
+            provisionalReleaseDate.setDate(provisionalReleaseDate.getDate() + days);
+
+            // Calcolo dei semestri completati
+            const totalMonths = years * 12 + months;
+            const totalSemesters = Math.floor(totalMonths / 6);
+            const usableSemesters = Math.max(totalSemesters - lostSemesters, 0);
+
+            // Calcolo del numero di giorni di sconto
+            const discountDays = usableSemesters * 45;
+
+            // Calcolo della data definitiva
+            let finalReleaseDate = new Date(provisionalReleaseDate);
+            finalReleaseDate.setDate(finalReleaseDate.getDate() - discountDays);
+
+            // Visualizzazione dei risultati
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <p><strong>Data fine pena provvisoria:</strong> ${provisionalReleaseDate.toISOString().split('T')[0]}</p>
+                <p><strong>Semestri fruibili:</strong> ${usableSemesters}</p>
+                <p><strong>Giorni di sconto accumulati:</strong> ${discountDays}</p>
+                <p><strong>Data fine pena definitiva:</strong> ${finalReleaseDate.toISOString().split('T')[0]}</p>
+            `;
+        }
+
+        function resetFields() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('years').value = '0';
+            document.getElementById('months').value = '0';
+            document.getElementById('days').value = '0';
+            document.getElementById('lostSemesters').value = '0';
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
 </body>
 </html>
